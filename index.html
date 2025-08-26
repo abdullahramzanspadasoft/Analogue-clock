@@ -1,17 +1,113 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Analog Clock</title>
-    <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Simple Weather App</title>
+<link rel="shortcut icon" href="we.png" type="image/x-icon">
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background: #e0f7fa;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+  }
+  .weather-container {
+    background: white;
+    padding: 20px 30px;
+    border-radius: 10px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+    width: 320px;
+    text-align: center;
+  }
+  input[type="text"] {
+    width: 80%;
+    padding: 8px 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 16px;
+  }
+  button {
+    padding: 10px 15px;
+    border: none;
+    background: #00796b;
+    color: white;
+    font-size: 16px;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  button:hover {
+    background: #004d40;
+  }
+  .weather-result {
+    margin-top: 20px;
+  }
+  .weather-result img {
+    width: 64px;
+    height: 64px;
+  }
+  .error {
+    color: red;
+    margin-top: 15px;
+  }
+</style>
 </head>
 <body>
-    <div class="clock">
-        <div class="hand hour-hand"></div>
-        <div class="hand minute-hand"></div>
-        <div class="hand second-hand"></div>
-    </div>
-    <script src="script.js"></script>
+
+<div class="weather-container">
+  <h2>Weather App</h2>
+  <input type="text" id="locationInput" placeholder="Enter location (Abdullah)" />
+  <button id="getWeatherBtn">Get Weather</button>
+
+  <div class="weather-result" id="weatherResult"></div>
+  <div class="error" id="errorMsg"></div>
+</div>
+
+
+<script>
+  const apiKey = "3c120f0b49484aecae871342252608";
+
+  document.getElementById('getWeatherBtn').addEventListener('click', () => {
+    const location = document.getElementById('locationInput').value.trim();
+    const weatherResult = document.getElementById('weatherResult');
+    const errorMsg = document.getElementById('errorMsg');
+
+    weatherResult.innerHTML = "";
+    errorMsg.textContent = "";
+
+    if (!location) {
+      errorMsg.textContent = "Please enter a location.";
+      return;
+    }
+
+    fetch(`http://api.weatherapi.com/v1/current.json?key=${apiKey}&q=${encodeURIComponent(location)}&aqi=yes`)
+      .then(response => {
+        if (!response.ok) {
+          throw new Error("Location not found");
+        }
+        return response.json();
+      })
+      .then(data => {
+        const { location, current } = data;
+
+        weatherResult.innerHTML = `
+          <h3>${location.name}, ${location.country}</h3>
+          <img src="https:${current.condition.icon}" alt="${current.condition.text}" />
+          <p><strong>${current.temp_c} °C</strong> | ${current.condition.text}</p>
+          <p>Humidity: ${current.humidity}%</p>
+          <p>Wind: ${current.wind_kph} kph</p>
+          <p>Air Quality Index: ${data.current.air_quality ? Math.round(data.current.air_quality["us-epa-index"]) : "N/A"}</p>
+        `;
+      })
+      .catch(err => {
+        errorMsg.textContent = err.message;
+      });
+  });
+</script>
+
 </body>
 </html>
